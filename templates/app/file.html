@@ -1,0 +1,227 @@
+<nav id="subNavbar" class="navbar navbar-inverse border-sharp" role="navigation">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand">{{ file.title | limitTo: 40 }}{{file.title.length > 40 ? '...' : ''}}</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+        <li ng-show="mainPanel !== 'edit'"><a ng-click="mainPanel = 'edit'">Редакция</a></li>
+        <li ng-show="mainPanel !== 'preview'"><a ng-click="mainPanel = 'preview'">Преглед</a></li>
+        <li><a ng-click="sidePanel = 'anotations'">Анотации</a></li>
+        <li ng-show="file.users.length > 1"><a ng-click="sidePanel = 'chat'">Чат</a></li>
+        <li>
+          <a class="dropdown-toggle" data-toggle="dropdown">Споделяне <span class="caret"></span></a>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="">
+            <li><a data-toggle="modal" data-target="#shareModal">Сподели с човек</a></li>
+            <li><a data-toggle="modal" data-target="#makePublicModal">Вземи публичен линк</a></li>
+          </ul>
+          </div>
+        </li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
+<div id="contentWrapper" class="container-fluid">
+  <div class="row fullheight">
+    
+    <!-- Anotations -->
+    <div ng-show="sidePanel === 'anotations'" class="col-md-4 col-lg-3 hidden-sm hidden-xs fullheight well well-sm" style="position: relative; overflow-y: auto;">
+      <button ng-click="sidePanel = 'none'" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <h3 class="text-center">Анотации</h3>
+      <!-- No anotations message-->
+      <div ng-hide="file.anotations.length" class="alert alert-warning">
+          Към този текст няма създадени анотации. Може да създадете такава, като селектирате избран от вас текст.
+      </div>
+      <!--/ No anotations message-->
+        
+      <!-- Anotations Accordion-->
+      <accordion close-others="true" class="fullheight">
+        <accordion-group class="border-sharp" ng-repeat="anotation in file.anotations" heading="{{anotation.user.data.name}} {{anotation.title}}" is-open="openedAnotations[$index]">
+          <div class="well well-sm text-center">
+            <h4>{{anotation.user.data.name}}</h4>
+            <p>
+              {{anotation.title}}
+            </p>
+          </div>
+          <hr>
+          <div ng-repeat="comment in file.anotations[$index].comments" class="well well-sm">
+            <h5>{{comment.user.data.name}}</h5>
+            <p>
+              {{comment.content}}
+            </p>
+          </div>
+          <div class="btn-group btn-group-sm bottom-buffer-sm">
+            <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#commentBox{{$index}}">Напиши коментар</button>
+            <button type="button" class="btn btn-danger" ng-if="anotation.user._id === user._id" ng-click="deleteAnotation(anotation._id)">Затвори анотацията</button>
+          </div>
+          <div id="commentBox{{$index}}" class="collapse well well-sm">
+            <form ng-submit="addComment($index, comment); comment = ''">
+              <div class="form-group">
+                  <input type="text" class="form-control" ng-model="comment" placeholder="Напиши твоя коментар тук...">
+              </div>
+              <button type="submit" class="btn btn-success">
+                Коментирай
+              </button>
+            </form>
+          </div>
+        </accordion-group>
+      </accordion>
+      <!--/ Anotations Accordion-->
+      
+      <!-- Selected Text Box -->
+      <div ng-show="selectedText" class="panel panel-default">
+        <div class="panel-body text-center">
+          {{ selectedText | limitTo: 100 }}{{selectedText.length > 100 ? '...' : ''}}
+        </div>
+        <div class="panel-footer" ng-hide="anotationBox">
+          <a class="btn btn-primary btn-sm" ng-click="anotationBox = true">Създай анотация</a>
+          <a class="btn btn-success btn-sm" ng-click="addBookmark()">Добави към цитати</a>
+          <a class="btn btn-danger btn-sm" ng-click="cancelAnotation()">Отказ</a>
+        </div>
+        <div class="panel-footer" ng-show="anotationBox">
+          <form ng-submit="addAnotation()">
+            <div class="form-group">
+              <textarea class="form-control" ng-model="anotation" placeholder="Съдържание..." rows="5" ></textarea>
+            </div>
+            <button type="submit" class="btn btn-default">Създай</button>
+          </form>
+        </div>
+      </div>
+      <!--/ Selected Text Box -->
+      
+    </div>
+
+    <!-- Chat -->
+    <div  id="chatContainer" ng-show="sidePanel === 'chat'" class="col-md-4 col-lg-3 hidden-sm hidden-xs fullheight well well-sm">
+      <button ng-click="sidePanel = 'none'" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <h3 class="text-center">Чат</h3>
+      <div class="chat-box fullheight" style="overflow:hidden;">
+        <div id="chatBox" style="height:65%; overflow-y:auto;">
+          <div class="well well-sm" ng-repeat="message in chat">
+            <p>
+              <b>{{message.user}}</b> : {{message.content}}
+            </p>
+          </div>
+        </div>
+        <div class="input-group fullwidth">
+          <form ng-submit="addChatMessage(chatMessage)">
+            <input type="text" class="form-control" required ng-model="chatMessage" placeholder="Въведи съобщение">
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div ng-class="sidePanel !== 'none' ? 'col-md-8 col-lg-9' : 'col-md-offset-1 col-md-10'" class="fullheight">
+      <div ng-show="mainPanel === 'preview'" style="border: solid 1px #cdcdcd; overflow: auto;" class="fullheight">
+        <div id="previewBox" preview-box text-select style="padding: 50px 30px 30px; overflow: auto;" content="file.content">
+        </div>
+      </div>
+      <div ng-show="mainPanel === 'edit'" style="margin-top: 10px">
+        <textarea
+          id="contentBox"
+          ckeditor="editorOptions"
+          ng-keyup="updateContent()"
+          ng-model="file.content">
+        </textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!------------------------------------------------------------->
+<!-------------------------MODALS------------------------------>
+<!------------------------------------------------------------->
+
+<div class="modal fade" id="makePublicModal" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Направи файлът достъпен с линк</h4>
+      </div>
+      <div class="modal-body">
+        <div class="btn-group bottom-buffer" data-toggle="buttons">
+          <label class="btn btn-primary" ng-class="file.public ? 'active' : ''" ng-click="file.public = true">
+            <input type="radio"
+                   ng-model="file.public"
+                   value="true"
+                   ng-change="file.public = true">Публичен
+          </label>
+          <label class="btn btn-primary" ng-class="file.public ? '' : 'active'" ng-click="file.public = false">
+            <input type="radio"
+                   ng-model="file.public"
+                   value="false"
+                   ng-change="file.public = false"> Частен
+          </label>
+        </div>
+        <div ng-show="file.public">
+          <div class="form-group">
+            <label for=""><b>Публичен линк</b></label>
+            <input class="form-control" type="text" ng-value="'http://localhost:8080/shared/file/' + file._id">
+            <p class="help-block">Използвайте този линк за споделяне.</p>
+          </div>
+        </div>
+        <div class="alert alert-info">
+          <p>
+            <b>Публичен файл</b> е файл, който може да бъде видян от всеки, независимо дали има регистрация или не.
+          </p>
+        </div>
+        <div class="alert alert-info">
+          <p>
+            <b>Частен файл</b> е този, който е видим само за конкретни регистрирани потребители, с които сте го споделили.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Затвори</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Сподели файла с...</h4>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group">
+          <li class="list-group-item active">Този файл е достъпен от:</li>
+          <li class="list-group-item" ng-repeat="user in file.users">{{user.data.name}}</li>
+        </ul>
+        <form ng-submit="shareFile(userToShare)" class="bottom-buffer">
+          <div class="form-group" style="margin-top: 10px">
+            <input class="form-control" type="email" ng-model="userToShare" ng-focus="getFriends()" placeholder="Въведи email"
+             typeahead="friend.data.email as friend.data.name for friend in user.friends | filter : $viewValue" typeahead-loading="loadingLocations"
+             typeahead-template-url="/particials/friendsTypehead.html">
+             <p class="help-block">
+               Ако търсиш някой от приятелите си, може да търсиш и по име.
+             </p>
+            <i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
+          </div>
+          <button class="btn btn-primary" type="submit">Сподели</button>
+        </form>
+        <div class="alert alert-info">
+          <p>
+            Когато <b>споделите файл</b> с някого, той ще може не само да го преглежда, но и да го редактира и коментира.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Затвори</button>
+      </div>
+    </div>
+  </div>
+</div>

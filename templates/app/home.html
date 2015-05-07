@@ -1,0 +1,67 @@
+<div class="container-fluid" style="margin-top:10px;">
+  <div class="well well-sm">
+    <h4>Здравей, {{user.data.name}}!</h4>
+  </div>
+  <div class="row">
+    <div class="col-sm-4 col-md-4 col-lg-3">
+      <!-- Last Books -->
+      <div ng-show="user.lastBooks.length" class="panel panel-primary">
+        <div class="panel-heading" style="color: white;">Последно прочетени книги</div>
+        <div class="list-group">
+          <a class="list-group-item" ng-repeat="book in user.lastBooks" ui-sref="app.book({id : book._id})">{{book.title}}</a>
+          <a class="list-group-item" ui-sref="app.books">Всички книги...</a>
+        </div>
+      </div>
+      <!-- Last Files -->
+      <div ng-show="user.lastFiles.length" class="panel panel-success">
+        <div class="panel-heading" style="color: white;">Последно отворени файлове</div>
+        <div class="list-group">
+          <a class="list-group-item" ng-repeat="file in user.lastFiles" ui-sref="app.file({id : file._id})">{{file.title}}</a>
+          <a class="list-group-item" ui-sref="app.files">Всички файлове...</a>
+        </div>
+      </div>
+      <!-- Last Pages -->
+      <div ng-show="user.lastPages.length" class="panel panel-warning">
+        <div class="panel-heading" style="color: white;">Последно разгледани статии</div>
+        <div class="list-group">
+          <a class="list-group-item" ng-repeat="page in user.lastPages" ui-sref="app.page({id : page._id})">{{page.title}}</a>
+          <a class="list-group-item" ui-sref="app.pages">Всички статии...</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-8 col-lg-9">
+      <!--Search Field-->
+      <div class="well well-sm clearfix">
+        <form ng-submit="search(searchPhrase)">
+          <h4>Търси</h4>
+          <div class="form-group">
+            <input type="text" class="form-control" ng-model="searchPhrase" placeholder="въведете дума или фраза">
+          </div>
+          <button type="submit" class="btn btn-primary pull-right">Търси</button>
+        </form>
+      </div>
+      <!--Search Result-->
+      <div ng-show="searchResult">
+        <!--Books-->
+        <div class="panel panel-primary" ng-show="searchResult.books.results.length">
+          <div class="panel-heading" style="color:white">Намерени книги (по заглавие)</div>
+          <div class="list-group">
+            <a ui-sref="app.book({id: book.obj._id})" class="list-group-item" ng-repeat="book in searchResult.books.results | orderBy:page.score">{{book.obj.title}}</a>
+          </div>
+        </div>
+        <!--Files-->
+        <div ng-show="searchResult.files.results.length" class="panel panel-success">
+          <div class="panel-heading" style="color:white;">Намерени файлове</div>
+          <div class="list-group">
+            <a ui-sref="app.file({id: file.obj._id})" class="list-group-item" ng-repeat="file in searchResult.files.results | orderBy:file.score">{{file.obj.title}}</a>
+          </div>
+        </div>
+        <!--Pages-->
+        <div class="panel panel-warning" ng-show="searchResult.pages.results.length">
+          <div class="panel-heading" style="color:white">Намерени статии</div>
+          <div class="list-group">
+            <a ui-sref="app.page({id: page.obj._id})" class="list-group-item" ng-repeat="page in searchResult.pages.results | orderBy:page.score">{{page.obj.title}}</a>
+          </div>
+        </div>
+      </div>
+    </div>

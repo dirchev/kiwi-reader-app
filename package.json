@@ -1,0 +1,20 @@
+{
+  "name": "kiwi-reader-desktop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dimitar Mirchev <dimitar.mirchev96@gmail.com> (http://dirchev.me/)",
+  "license": "ISC",
+  "window": {
+    "title": "Kiwi Reader",
+    "icon": "logo.png",
+    "toolbar": false,
+    "frame": true,
+    "position": "mouse",
+    "min_width": 800,
+    "min_height": 600
+  }
+}
